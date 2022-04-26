@@ -11,4 +11,4 @@ module Types = struct
     }
 
     type t = Commit of commit_param | Reveal of reveal_param | Reset of reset_param
-end 
+end
