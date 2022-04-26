@@ -1,8 +1,7 @@
 let not_authorized : string = "Not authorized"
 let missing_chest : string = "Missing some chest"
-let commit_expects_10_mutez_lock : string = "You must lock 10mutez"
-let reveal_expects_0_mutez_lock : string = "You must not send tez (reveal entrypoint)"
-let reset_expects_0_mutez_lock : string = "You must not send tez (reset entrypoint)"
+let insufficient_amount : string = "INSUFFICIENT_AMOUNT"
+let not_zero_amount = "NOT_ZERO_AMOUNT"
 
 let fail_open_chest_timelock : string = "Could not open chest: Fail_timelock"
 let fail_open_chest_decrypt : string = "Could not open chest: Fail_decrypt"
