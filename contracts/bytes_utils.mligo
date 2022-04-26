@@ -1,11 +1,11 @@
-module Utils = struct 
+module Utils = struct
 
-    let power (x, y : nat * nat) : nat = 
+    let power (x, y : nat * nat) : nat =
         let rec multiply(acc, elt, last: nat * nat * nat ) : nat = if last = 0n then acc else multiply(acc * elt, elt, abs(last - 1n)) in
         multiply(1n, x, y)
 
     let hexa_to_nat(hexa : bytes) : nat =
-        let _check_size : unit = assert_with_error (Bytes.length hexa = 1n) "Can only convert 1 byte" in    
+        let _check_size : unit = assert_with_error (Bytes.length hexa = 1n) "Can only convert 1 byte" in
         if hexa = 0x00 then 0n
         else if hexa = 0x01 then 1n
         else if hexa = 0x02 then 2n
@@ -274,8 +274,8 @@ module Utils = struct
             else
                 let size : nat = (Bytes.length payload) in
                 let one_left_bytes = Bytes.sub 0n 1n payload in
-                let right_bytes = Bytes.sub 1n (abs(size - 1n)) payload in 
-                let one_left_nat = hexa_to_nat(one_left_bytes) * power(256n, abs(indice - 1n)) in 
+                let right_bytes = Bytes.sub 1n (abs(size - 1n)) payload in
+                let one_left_nat = hexa_to_nat(one_left_bytes) * power(256n, abs(indice - 1n)) in
                 convert_to_nat(acc + one_left_nat, abs(indice - 1n), right_bytes)
         in
         convert_to_nat(0n, Bytes.length payload, payload)
