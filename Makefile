@@ -1,50 +1,41 @@
-ligo_compiler=docker run --rm -v "$$PWD":"$$PWD" -w "$$PWD" ligolang/ligo:next
-# ligo_compiler=../../../ligo
-# PROTOCOL_OPT=--protocol hangzhou
-JSON_OPT=--michelson-format json
+SHELL := /bin/bash
+
+LIGO=ligo
+ifeq (, $(shell which ligo))
+        LIGO=docker run -v "$(PWD):$(PWD)" -w "$(PWD)" --rm -i ligolang/ligo:0.40.0
+endif
+# ^ use ligo bin if available, otherwise use docker
+
+protocol=--protocol ithaca
 
 help:
-	@echo  'Usage:'
-	@echo  '  all             - Remove generated Michelson files, recompile smart contracts and lauch all tests'
-	@echo  '  clean           - Remove generated Michelson files'
-	@echo  '  compile         - Compiles smart contract Random'
-	@echo  '  test            - Run integration tests (written in Ligo)'
-	@echo  '  deploy          - Deploy smart contracts advisor & indice (typescript using Taquito)'
-	@echo  ''
+	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
+	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-all: clean compile test
+compile = $(LIGO) compile contract $(protocol) ./contracts/$(1) -o ./compiled/$(2) $(3)
+# ^ compile contract to michelson or micheline
 
-compile: random
+test = $(LIGO) run test $(protocol) ./test/$(1)
+# ^ run given test file
 
-random: random.tz random.json
+compile: ## compile contracts
+	@if [ ! -d ./compiled ]; then mkdir ./compiled ; fi
+	@$(call compile,main.mligo,randomness.tz)
+	@$(call compile,main.mligo,randomness.json,--michelson-format json)
 
-random.tz: contracts/main.mligo
-	@echo "Compiling smart contract to Michelson"
-	@$(ligo_compiler) compile contract $^ -e main > compiled/$@
+clean: ## clean up
+	@rm -rf compiled
 
-random.json: contracts/main.mligo
-	@echo "Compiling smart contract to Michelson in JSON format"
-	@$(ligo_compiler) compile contract $^ $(JSON_OPT) -e main > compiled/$@
-
-clean:
-	@echo "Removing Michelson files"
-	@rm -f compiled/*.tz compiled/*.json
-
-test: test_ligo test_ligo_bytes
-
-test_ligo: test/test.mligo 
-	@echo "Running integration tests"
-	@$(ligo_compiler) run test $^
-
-test_ligo_bytes: test/test_bytes.mligo 
-	@echo "Running integration tests (bytes conversion)"
-	@$(ligo_compiler) run test $^
+.PHONY: test
+test: ## run tests
+	@$(call test,test.mligo)
+	@$(call test,test_bytes.mligo)
 
 deploy: node_modules deploy.js
 	@echo "Deploying contract"
 	@node deploy/deploy.js
 
-deploy.js: 
+deploy.js:
 	@cd deploy && tsc deploy.ts --resolveJsonModule -esModuleInterop
 
 node_modules:
